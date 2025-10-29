@@ -106,10 +106,6 @@ For more details on the architecture and the underlying widget, see the [agent-h
 
 - **[agent-handler-chat](https://github.com/merge-api/agent-handler-chat)**: The main Chat widget application (this package wraps it)
 
-## TODO
-
-- [ ] Publish as npm package
-
 ## License
 
 MIT
