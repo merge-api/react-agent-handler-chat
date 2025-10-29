@@ -79,6 +79,8 @@ function App() {
 
 #### `useAgentHandlerChat(config)`
 
+<!-- TODO: Update parameters if updated? -->
+
 **Parameters:**
 - `chatToken` (string, optional): The chat token for authentication
 - `displayMode` ('modal' | 'inline', optional): Display mode. Default: 'modal'
