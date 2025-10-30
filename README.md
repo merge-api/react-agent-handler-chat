@@ -102,6 +102,35 @@ This package dynamically loads the Agent Handler Chat widget from the CDN and pr
 
 For more details on the architecture and the underlying widget, see the [agent-handler-chat repository](https://github.com/merge-api/agent-handler-chat).
 
+## Development
+
+### Running the Example App
+
+The `examples/` directory contains a test application for development and testing.
+
+```bash
+cd examples
+npm install
+```
+
+**Start with different CDN environments:**
+
+```bash
+# Use local CDN (requires agent-handler-chat running on localhost:3007)
+npm run start:local
+
+# Use development CDN
+npm run start:dev
+
+# Use production CDN
+npm run start:prod
+
+# Default (infers CDN from API URL)
+npm run dev
+```
+
+The `VITE_CHAT_CDN` environment variable overrides the automatic CDN selection based on API URL. This is useful for testing the chat widget from different environments.
+
 ## Related Repositories
 
 - **[agent-handler-chat](https://github.com/merge-api/agent-handler-chat)**: The main Chat widget application (this package wraps it)

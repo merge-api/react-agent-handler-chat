@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useAgentHandlerChat } from '@mergeapi/react-agent-handler-chat'
 
 type DisplayMode = 'inline' | 'modal'
@@ -32,16 +32,25 @@ function ChatExample({
 }: ChatExampleProps) {
   const apiBaseURL = getApiBaseURL(apiOption)
 
-  // Using dummy token for testing
-  const { open, isReady, error } = useAgentHandlerChat({
-    authToken: 'dummy-auth-token-for-testing',
-    displayMode,
-    useDummyResponse,
-    tenantConfig: {
-      apiBaseURL,
+  // Memoize config to prevent unnecessary re-initializations
+  const chatConfig = useMemo(
+    () => {
+      const config = {
+        authToken: 'dummy-auth-token-for-testing',
+        displayMode,
+        useDummyResponse,
+        tenantConfig: {
+          apiBaseURL,
+        },
+        parentContainerID: displayMode === 'inline' ? 'chat-container' : undefined,
+      };
+      return config;
     },
-    parentContainerID: displayMode === 'inline' ? 'chat-container' : undefined,
-  })
+    [displayMode, useDummyResponse, apiBaseURL]
+  )
+
+  // Using dummy token for testing
+  const { open, isReady, error } = useAgentHandlerChat(chatConfig)
 
   useEffect(() => {
     if (isReady && displayMode === 'modal') {

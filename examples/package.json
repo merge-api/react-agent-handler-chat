@@ -5,6 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "start:local": "VITE_CHAT_CDN=local vite",
+    "start:dev": "VITE_CHAT_CDN=dev vite",
+    "start:prod": "VITE_CHAT_CDN=prod vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
