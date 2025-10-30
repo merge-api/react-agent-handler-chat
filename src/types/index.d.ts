@@ -12,6 +12,7 @@ export type DisplayMode = 'modal' | 'inline';
 
 export interface UseAgentHandlerChatProps {
   chatToken?: string | undefined;
+  authToken?: string | undefined;
   tenantConfig?: TenantConfig;
   displayMode?: DisplayMode;
   onReady?: () => void;
@@ -20,10 +21,14 @@ export interface UseAgentHandlerChatProps {
    * Passing this allows users to target a specific element in their page to embed chat under (eg for modals)
    */
   parentContainerID?: string;
+  toolPackId?: string;
+  registeredUserId?: string;
+  useDummyResponse?: boolean;
 }
 
 export interface InitializeProps extends UseAgentHandlerChatProps {
-  chatToken: string;
+  chatToken?: string;
+  authToken?: string;
 }
 
 export interface OpenProps {

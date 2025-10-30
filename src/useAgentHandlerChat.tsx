@@ -6,9 +6,10 @@ import {
 } from './types';
 import useScript from './hooks/useScript';
 
-const isChatTokenDefined = (
+const isTokenDefined = (
   config: UseAgentHandlerChatProps
-): config is InitializeProps => config?.chatToken !== undefined;
+): config is InitializeProps => 
+  config?.chatToken !== undefined || config?.authToken !== undefined;
 
 export const useAgentHandlerChat = ({
   displayMode = 'modal',
@@ -39,13 +40,13 @@ export const useAgentHandlerChat = ({
     !!window.AgentHandlerChat &&
     !loading &&
     !error &&
-    isChatTokenDefined(config);
+    isTokenDefined(config);
 
   useEffect(() => {
     if (
       isReadyForInitialization &&
       window.AgentHandlerChat &&
-      isChatTokenDefined(config)
+      isTokenDefined(config)
     ) {
       window.AgentHandlerChat.initialize({
         ...config,
