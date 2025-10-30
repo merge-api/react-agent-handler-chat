@@ -19,14 +19,14 @@ export const useAgentHandlerChat = ({
     const base = config?.tenantConfig?.apiBaseURL || '';
     // Local dev
     if (/localhost|127\.0\.0\.1/.test(base)) {
-      return 'http://localhost:3007/chat.js';
+      return 'http://localhost:3007/initialize.js';
     }
     // Develop
     if (base.includes('-develop.') || base.includes('ah-api-develop.merge.dev')) {
-      return 'https://ah-cdn-develop.merge.dev/chat.js';
+      return 'https://ah-chat-cdn-develop.merge.dev/initialize.js';
     }
     // Default: Production
-    return 'https://ah-cdn.merge.dev/chat.js';
+    return 'https://ah-chat-cdn.merge.dev/initialize.js';
   })();
 
   const [loading, error] = useScript({
