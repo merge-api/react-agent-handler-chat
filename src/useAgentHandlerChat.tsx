@@ -26,30 +26,43 @@ export const useAgentHandlerChat = ({
   displayMode = 'modal',
   ...config
 }: UseAgentHandlerChatProps): UseAgentHandlerChatResponse => {
+  const getCdnUrl = (env: 'local' | 'development' | 'production'): string => {
+    switch (env) {
+      case 'local':
+        return 'http://localhost:3007/initialize.js';
+      case 'development':
+        return 'https://ah-chat-cdn-develop.merge.dev/initialize.js';
+      case 'production':
+        return 'https://ah-chat-cdn.merge.dev/initialize.js';
+    }
+  };
+
   const initializeSrc = (() => {
-    // Allow override via environment variable (useful for testing)
+    // Priority 1: Use environmentCdn if specified
+    if (config?.tenantConfig?.environmentCdn) {
+      return getCdnUrl(config.tenantConfig.environmentCdn);
+    }
+    
+    // Priority 2: Use environment if specified
+    if (config?.tenantConfig?.environment) {
+      return getCdnUrl(config.tenantConfig.environment);
+    }
+    
+    // Priority 3: Allow override via environment variable (useful for build-time testing)
     const envOverride = typeof process !== 'undefined' && process.env?.VITE_CHAT_CDN;
     if (envOverride) {
       switch (envOverride) {
         case 'local':
           return 'http://localhost:3007/initialize.js';
         case 'dev':
+        case 'development':
           return 'https://ah-chat-cdn-develop.merge.dev/initialize.js';
         case 'prod':
+        case 'production':
           return 'https://ah-chat-cdn.merge.dev/initialize.js';
       }
     }
 
-    // Otherwise, infer from API base URL
-    const base = config?.tenantConfig?.apiBaseURL || '';
-    // Local dev
-    if (/localhost|127\.0\.0\.1/.test(base)) {
-      return 'http://localhost:3007/initialize.js';
-    }
-    // Develop
-    if (base.includes('-develop.') || base.includes('ah-api-develop.merge.dev')) {
-      return 'https://ah-chat-cdn-develop.merge.dev/initialize.js';
-    }
     // Default: Production
     return 'https://ah-chat-cdn.merge.dev/initialize.js';
   })();

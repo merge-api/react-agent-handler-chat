@@ -1,6 +1,6 @@
 {
   "name": "@mergeapi/react-agent-handler-chat",
-  "version": "1.0.1-alpha.5",
+  "version": "1.0.1-alpha.6",
   "description": "A React hook wrapper for Agent Handler Chat.",
   "files": [
     "dist",

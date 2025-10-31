@@ -79,16 +79,19 @@ function App() {
 
 #### `useAgentHandlerChat(config)`
 
-<!-- TODO: Update parameters if updated? -->
-
 **Parameters:**
 - `chatToken` (string, optional): The chat token for authentication
+- `authToken` (string, optional): The auth token for authentication (alternative to chatToken)
 - `displayMode` ('modal' | 'inline', optional): Display mode. Default: 'modal'
-- `tenantConfig` (object, optional): Custom tenant configuration
-  - `apiBaseURL` (string): Custom API base URL
+- `tenantConfig` (object, optional): Environment configuration
+  - `environment` ('local' | 'development' | 'production', optional): Backend API and CDN environment
+  - `environmentCdn` ('local' | 'development' | 'production', optional): Override CDN environment separately
 - `onReady` (function, optional): Callback when chat is ready
 - `onClose` (function, optional): Callback when chat is closed
 - `parentContainerID` (string, optional): ID of parent container element for inline mode
+- `toolPackId` (string, optional): Tool pack UUID
+- `registeredUserId` (string, optional): Registered user UUID
+- `useDummyResponse` (boolean, optional): Enable dummy mode for testing
 
 **Returns:**
 - `open` (function): Function to open the chat
@@ -113,23 +116,37 @@ cd examples
 npm install
 ```
 
-**Start with different CDN environments:**
+**Start the development server:**
 
 ```bash
-# Use local CDN (requires agent-handler-chat running on localhost:3007)
-npm run start:local
-
-# Use development CDN
-npm run start:dev
-
-# Use production CDN
-npm run start:prod
-
-# Default (infers CDN from API URL)
 npm run dev
+# or
+npm run start:local   # Same as dev
+npm run start:dev     # Same as dev
+npm run start:prod    # Same as dev
 ```
 
-The `VITE_CHAT_CDN` environment variable overrides the automatic CDN selection based on API URL. This is useful for testing the chat widget from different environments.
+All commands start the same Vite dev server. The backend and CDN environment is controlled through the UI by selecting:
+- **Backend API**: local, development, or production
+- **CDN**: local, development, or production
+
+This allows you to test any combination of backend and CDN environments without restarting the server.
+
+**Advanced: Override CDN via tenantConfig**
+
+You can also programmatically control the environment in your code:
+
+```tsx
+const { open } = useAgentHandlerChat({
+  authToken: 'your-token',
+  tenantConfig: {
+    environment: 'production',      // Backend API environment
+    environmentCdn: 'local'          // Override CDN to use local (useful for testing)
+  }
+});
+```
+
+If `environmentCdn` is not specified, it defaults to the same value as `environment`.
 
 ## Related Repositories
 

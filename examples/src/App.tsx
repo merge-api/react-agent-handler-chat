@@ -3,15 +3,14 @@ import ChatExample from './ChatExample'
 import './App.css'
 
 type DisplayMode = 'inline' | 'modal'
-type CDNOption = 'local' | 'dev' | 'prod'
-type APIOption = 'local' | 'dev' | 'prod'
+type Environment = 'local' | 'development' | 'production'
 
 function App() {
   const [showChat, setShowChat] = useState(false)
   const [displayMode, setDisplayMode] = useState<DisplayMode>('inline')
   const [useDummyResponse, setUseDummyResponse] = useState(false)
-  const [cdnOption, setCdnOption] = useState<CDNOption>('dev')
-  const [apiOption, setApiOption] = useState<APIOption>('dev')
+  const [cdnOption, setCdnOption] = useState<Environment>('development')
+  const [apiOption, setApiOption] = useState<Environment>('development')
 
   const handleGoClick = () => {
     setShowChat(true)
@@ -99,7 +98,7 @@ function App() {
               name="cdn"
               value="local"
               checked={cdnOption === 'local'}
-              onChange={(e) => setCdnOption(e.target.value as CDNOption)}
+              onChange={(e) => setCdnOption(e.target.value as Environment)}
             />
             <span>Local - http://localhost:3007</span>
           </label>
@@ -107,9 +106,9 @@ function App() {
             <input
               type="radio"
               name="cdn"
-              value="dev"
-              checked={cdnOption === 'dev'}
-              onChange={(e) => setCdnOption(e.target.value as CDNOption)}
+              value="development"
+              checked={cdnOption === 'development'}
+              onChange={(e) => setCdnOption(e.target.value as Environment)}
             />
             <span>Dev - https://ah-chat-cdn-develop.merge.dev</span>
           </label>
@@ -117,9 +116,9 @@ function App() {
             <input
               type="radio"
               name="cdn"
-              value="prod"
-              checked={cdnOption === 'prod'}
-              onChange={(e) => setCdnOption(e.target.value as CDNOption)}
+              value="production"
+              checked={cdnOption === 'production'}
+              onChange={(e) => setCdnOption(e.target.value as Environment)}
             />
             <span>Prod - https://ah-chat-cdn.merge.dev</span>
           </label>
@@ -135,7 +134,7 @@ function App() {
               name="api"
               value="local"
               checked={apiOption === 'local'}
-              onChange={(e) => setApiOption(e.target.value as APIOption)}
+              onChange={(e) => setApiOption(e.target.value as Environment)}
             />
             <span>Local - http://localhost:8000</span>
           </label>
@@ -143,9 +142,9 @@ function App() {
             <input
               type="radio"
               name="api"
-              value="dev"
-              checked={apiOption === 'dev'}
-              onChange={(e) => setApiOption(e.target.value as APIOption)}
+              value="development"
+              checked={apiOption === 'development'}
+              onChange={(e) => setApiOption(e.target.value as Environment)}
             />
             <span>Dev - https://ah-api-develop.merge.dev</span>
           </label>
@@ -153,9 +152,9 @@ function App() {
             <input
               type="radio"
               name="api"
-              value="prod"
-              checked={apiOption === 'prod'}
-              onChange={(e) => setApiOption(e.target.value as APIOption)}
+              value="production"
+              checked={apiOption === 'production'}
+              onChange={(e) => setApiOption(e.target.value as Environment)}
             />
             <span>Prod - https://ah-api.merge.dev</span>
           </label>

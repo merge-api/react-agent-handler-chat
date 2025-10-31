@@ -1,37 +1,25 @@
 import { useEffect, useMemo } from 'react'
 import { useAgentHandlerChat } from '@mergeapi/react-agent-handler-chat'
 
+// TODO: Import these from the package once rebuilt
 type DisplayMode = 'inline' | 'modal'
-type CDNOption = 'local' | 'dev' | 'prod'
-type APIOption = 'local' | 'dev' | 'prod'
+type Environment = 'local' | 'development' | 'production'
 
 interface ChatExampleProps {
   displayMode: DisplayMode
   useDummyResponse: boolean
-  cdnOption: CDNOption
-  apiOption: APIOption
+  cdnOption: Environment
+  apiOption: Environment
   onBack: () => void
-}
-
-const getApiBaseURL = (apiOption: APIOption): string => {
-  switch (apiOption) {
-    case 'local':
-      return 'http://localhost:8000'
-    case 'dev':
-      return 'https://ah-api-develop.merge.dev'
-    case 'prod':
-      return 'https://ah-api.merge.dev'
-  }
 }
 
 function ChatExample({
   displayMode,
   useDummyResponse,
   apiOption,
+  cdnOption,
   onBack,
 }: ChatExampleProps) {
-  const apiBaseURL = getApiBaseURL(apiOption)
-
   // Memoize config to prevent unnecessary re-initializations
   const chatConfig = useMemo(
     () => {
@@ -40,13 +28,14 @@ function ChatExample({
         displayMode,
         useDummyResponse,
         tenantConfig: {
-          apiBaseURL,
+          environment: apiOption,
+          environmentCdn: cdnOption,
         },
         parentContainerID: displayMode === 'inline' ? 'chat-container' : undefined,
       };
       return config;
     },
-    [displayMode, useDummyResponse, apiBaseURL]
+    [displayMode, useDummyResponse, apiOption, cdnOption]
   )
 
   // Using dummy token for testing

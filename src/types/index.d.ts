@@ -5,8 +5,19 @@ export interface AgentHandlerChat {
   destroy: () => void;
 }
 
+export type Environment = 'local' | 'development' | 'production';
+
 export interface TenantConfig {
-  apiBaseURL?: string;
+  /**
+   * Environment for backend API and CDN (unless environmentCdn is specified)
+   * If not specified, the iframe will use its build-time REACT_APP_MERGE_ENV
+   */
+  environment?: Environment;
+  /**
+   * Override CDN environment separately from backend environment
+   * Useful for testing (e.g., use prod backend with local CDN)
+   */
+  environmentCdn?: Environment;
 }
 
 export type DisplayMode = 'modal' | 'inline';
