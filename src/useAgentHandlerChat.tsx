@@ -38,9 +38,9 @@ export const useAgentHandlerChat = ({
   };
 
   const initializeSrc = (() => {
-    // Priority 1: Use environmentCdn if specified
-    if (config?.tenantConfig?.environmentCdn) {
-      return getCdnUrl(config.tenantConfig.environmentCdn);
+    // Priority 1: Use cdnEnvironment if specified
+    if (config?.tenantConfig?.cdnEnvironment) {
+      return getCdnUrl(config.tenantConfig.cdnEnvironment);
     }
     
     // Priority 2: Use environment if specified

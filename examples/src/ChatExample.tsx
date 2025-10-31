@@ -29,7 +29,7 @@ function ChatExample({
         useDummyResponse,
         tenantConfig: {
           environment: apiOption,
-          environmentCdn: cdnOption,
+          cdnEnvironment: cdnOption,
         },
         parentContainerID: displayMode === 'inline' ? 'chat-container' : undefined,
       };

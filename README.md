@@ -85,7 +85,7 @@ function App() {
 - `displayMode` ('modal' | 'inline', optional): Display mode. Default: 'modal'
 - `tenantConfig` (object, optional): Environment configuration
   - `environment` ('local' | 'development' | 'production', optional): Backend API and CDN environment
-  - `environmentCdn` ('local' | 'development' | 'production', optional): Override CDN environment separately
+  - `cdnEnvironment` ('local' | 'development' | 'production', optional): Override CDN environment separately
 - `onReady` (function, optional): Callback when chat is ready
 - `onClose` (function, optional): Callback when chat is closed
 - `parentContainerID` (string, optional): ID of parent container element for inline mode
@@ -141,12 +141,12 @@ const { open } = useAgentHandlerChat({
   authToken: 'your-token',
   tenantConfig: {
     environment: 'production',      // Backend API environment
-    environmentCdn: 'local'          // Override CDN to use local (useful for testing)
+    cdnEnvironment: 'local'          // Override CDN to use local (useful for testing)
   }
 });
 ```
 
-If `environmentCdn` is not specified, it defaults to the same value as `environment`.
+If `cdnEnvironment` is not specified, it defaults to the same value as `environment`.
 
 ## Related Repositories
 

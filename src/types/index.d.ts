@@ -9,7 +9,7 @@ export type Environment = 'local' | 'development' | 'production';
 
 export interface TenantConfig {
   /**
-   * Environment for backend API and CDN (unless environmentCdn is specified)
+   * Environment for backend API and CDN (unless cdnEnvironment is specified)
    * If not specified, the iframe will use its build-time REACT_APP_MERGE_ENV
    */
   environment?: Environment;
@@ -17,7 +17,7 @@ export interface TenantConfig {
    * Override CDN environment separately from backend environment
    * Useful for testing (e.g., use prod backend with local CDN)
    */
-  environmentCdn?: Environment;
+  cdnEnvironment?: Environment;
 }
 
 export type DisplayMode = 'modal' | 'inline';
