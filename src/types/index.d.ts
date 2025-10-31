@@ -20,13 +20,10 @@ export interface TenantConfig {
   cdnEnvironment?: Environment;
 }
 
-export type DisplayMode = 'modal' | 'inline';
-
 export interface UseAgentHandlerChatProps {
   chatToken?: string | undefined;
   authToken?: string | undefined;
   tenantConfig?: TenantConfig;
-  displayMode?: DisplayMode;
   onReady?: () => void;
   onClose?: () => void;
   /**

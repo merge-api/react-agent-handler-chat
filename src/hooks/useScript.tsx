@@ -24,12 +24,15 @@ type ScriptStatusMap = {
 // Previously loading/loaded scripts and their current status
 export const scripts: ScriptStatusMap = {};
 
-// Check for existing <script> tags with this src. If so, update scripts[src]
-// and return the new status; otherwise, return undefined.
-const checkExisting = (src: string): ScriptStatus | undefined => {
-  const existing: HTMLScriptElement | null = document.querySelector(
-    `script[src="${src}"]`
-  );
+// Check for existing <script> tags with this src and data-widget attribute.
+// If so, update scripts[src] and return the new status; otherwise, return undefined.
+const checkExisting = (src: string, dataWidget?: string): ScriptStatus | undefined => {
+  // Build selector to include data-widget if specified
+  const selector = dataWidget 
+    ? `script[src="${src}"][data-widget="${dataWidget}"]`
+    : `script[src="${src}"]`;
+  
+  const existing: HTMLScriptElement | null = document.querySelector(selector);
   if (existing) {
     // Assume existing <script> tag is already loaded,
     // and cache that data for future use.
@@ -53,7 +56,7 @@ export default function useScript({
   // If requested, check for existing <script> tags with this src
   // (unless we've already loaded the script ourselves).
   if (!status && checkForExisting && src && isBrowser) {
-    status = checkExisting(src);
+    status = checkExisting(src, attributes['data-widget']);
   }
 
   const [loading, setLoading] = useState<boolean>(
@@ -73,7 +76,7 @@ export default function useScript({
     // eslint-disable-next-line react-hooks/exhaustive-deps
     status = scripts[src];
     if (!status && checkForExisting) {
-      status = checkExisting(src);
+      status = checkExisting(src, attributes['data-widget']);
     }
 
     // Determine or create <script> element to listen to.

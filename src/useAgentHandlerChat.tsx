@@ -22,10 +22,9 @@ const isTokenDefined = (
  * @param config - Chat configuration
  * @returns { open, close, isReady, error }
  */
-export const useAgentHandlerChat = ({
-  displayMode = 'modal',
-  ...config
-}: UseAgentHandlerChatProps): UseAgentHandlerChatResponse => {
+export const useAgentHandlerChat = (
+  config: UseAgentHandlerChatProps
+): UseAgentHandlerChatResponse => {
   const getCdnUrl = (env: 'local' | 'development' | 'production'): string => {
     switch (env) {
       case 'local':
@@ -89,7 +88,6 @@ export const useAgentHandlerChat = ({
     ) {
       window.AgentHandlerChat.initialize({
         ...config,
-        displayMode,
         onReady: () => {
           setIsReady(true);
         },
@@ -103,7 +101,7 @@ export const useAgentHandlerChat = ({
       }
       setIsReady(false);
     };
-  }, [isReadyForInitialization, config, displayMode]);
+  }, [isReadyForInitialization, config]);
 
   const open = useCallback(() => {
     if (window.AgentHandlerChat) {
