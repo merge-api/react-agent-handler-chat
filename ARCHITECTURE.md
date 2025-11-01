@@ -1,6 +1,6 @@
 # Agent Handler Chat Architecture Documentation
 
-> **Last Updated**: 2025-10-31
+> **Last Updated**: 2025-10-31 (Simplified - config immutable after mount)
 
 ## Table of Contents
 1. [High-Level Overview](#high-level-overview)
@@ -84,11 +84,12 @@ The widget uses an **iframe-based architecture** with two distinct entry points:
 - Manages iframe lifecycle (create, destroy)
 - Handles communication with iframe via `postMessage`
 - Maintains state (auth token, display mode, configuration)
+- **Prevents multiple initializations** - Warns and ignores subsequent `initialize()` calls
 
 **Key Functions**:
 ```typescript
 window.AgentHandlerChat = {
-  initialize(config)  // Create iframe, set up config
+  initialize(config)  // Create iframe, set up config (only once)
   open(config?)       // Show chat (modal) or send config (inline)
   close()             // Hide chat (modal) or clear state
   destroy()           // Remove iframe from DOM completely
@@ -228,11 +229,17 @@ Provides a **React hook** that abstracts away the complexity of:
 **Role**: Main React hook implementation
 
 **Key Responsibilities**:
-- Loads `initialize.js` script using `useScript` hook
-- Determines correct CDN URL based on configuration
+- Determines correct CDN URL based on configuration (once at mount)
+- Loads `initialize.js` script directly (no separate hook)
 - Calls `window.AgentHandlerChat.initialize()` when ready
-- Manages iframe lifecycle (destroys on config changes)
+- Cleans up iframe on unmount only
 - Provides `open()`, `close()`, `isReady`, `error` to consumer
+
+**Simplified Design**:
+- Config is immutable after mount (as intended by design)
+- Script loads once, widget initializes once
+- No config change handling (unnecessary complexity removed)
+- Single useEffect with empty deps array
 
 **Hook Signature**:
 ```typescript
@@ -261,41 +268,40 @@ const { open, close, isReady, error } = useAgentHandlerChat({
 **Lifecycle Management**:
 ```typescript
 useEffect(() => {
-  // Initialize when ready
-  if (isReadyForInitialization) {
-    window.AgentHandlerChat.initialize({ ...config, displayMode, onReady })
-  }
-  
-  // Cleanup: Destroy iframe on unmount or config change
+  // Load script if not already loaded
+  // Initialize widget when script loads (only once)
+  // The underlying initialize() prevents multiple calls
+  // Cleanup: Destroy iframe on unmount only
   return () => {
     window.AgentHandlerChat?.destroy()
-    setIsReady(false)
   }
-}, [isReadyForInitialization, config, displayMode])
+}, []) // Empty deps - runs once on mount
 ```
 
-#### 2. `src/hooks/useScript.tsx`
-**Role**: Generic hook for loading external scripts
+#### 2. Script Loading (Inline)
+**Role**: Direct script loading within the main hook
 
 **Key Features**:
-- Loads script by creating `<script>` tag
-- Tracks loading state and errors
-- Caches script status globally to avoid duplicates
-- Checks for existing scripts with `data-widget` attribute
-- Cleans up properly on unmount
+- Creates `<script>` tag directly in useEffect
+- Checks for existing script with `data-widget` attribute
+- Simple error handling with string messages
+- No separate hook needed (reduced complexity)
 
-**Why custom implementation?**
-- Existing `react-script-hook` package had edge case bugs
-- Needed better handling of loading/unmounting interaction
-- Added support for `data-widget` attribute matching
-
-**Usage**:
+**Implementation**:
 ```typescript
-const [loading, error] = useScript({
-  src: 'https://ah-chat-cdn.merge.dev/initialize.js',
-  checkForExisting: true,
-  'data-widget': 'ah-chat',
-})
+const existingScript = document.querySelector(
+  `script[src="${cdnUrl}"][data-widget="ah-chat"]`
+);
+
+if (!existingScript) {
+  const script = document.createElement('script');
+  script.src = cdnUrl;
+  script.setAttribute('data-widget', 'ah-chat');
+  script.async = true;
+  script.onload = () => initializeWidget();
+  script.onerror = () => setError('Failed to load');
+  document.body.appendChild(script);
+}
 ```
 
 ### Build Process
@@ -420,8 +426,11 @@ function ChatPage() {
    ↓
 4. useAgentHandlerChat Calls initialize()
    - Passes config (authToken, displayMode, etc.)
+   - If already initialized, warns and ignores (prevents duplicates)
    ↓
-5. initialize() Creates Iframe
+5. initialize() Creates Iframe (Only Once)
+   - Checks if iframe already exists in DOM
+   - If exists, warns and returns early
    - Creates <iframe> element
    - Sets src to CDN URL (auto-detected)
    - Appends to parentContainerID or document.body
@@ -492,10 +501,34 @@ Iframe → Parent:
 
 **Decision**: Separation of concerns - core widget vs. framework-specific wrapper.
 
-### 3. Why Destroy Iframe on Config Change?
+### 3. Why Config is Immutable After Mount?
 
-**Alternative**: Update iframe state via postMessage
+**Design Decision**: Config never changes after initialization
 
-**Chosen approach**: Destroy and recreate
+**Reasoning**: 
+- Config is always specified at build time
+- No runtime config changes needed in practice
+- Eliminates entire class of complexity (destroy/recreate logic)
+- Simpler mental model for consumers
+- Better performance (no unnecessary re-renders or iframe recreation)
 
-**Reasoning**: Simpler implementation, guarantees fresh state, prevents edge cases with stale data.
+**If config needs to change**: Unmount and remount the component with new config
+
+### 4. Why Prevent Multiple Initializations?
+
+**Design Decision**: `initialize()` can only be called once successfully
+
+**Implementation** (as of commit 437145c):
+- Checks if iframe already exists in DOM
+- If exists, logs warning and returns early
+- Config is stored only on first initialization
+- No state updates or iframe recreation on subsequent calls
+
+**Reasoning**:
+- Prevents duplicate API calls and race conditions
+- Eliminates complex re-initialization logic
+- Protects against React Strict Mode double-mounting
+- Clearer error messages when misused
+- Simpler mental model: initialize once, use many times
+
+**React Hook Protection**: The `useAgentHandlerChat` hook uses `initializingRef` to ensure the underlying `initialize()` is only called once, even in React Strict Mode
