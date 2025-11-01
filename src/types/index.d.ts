@@ -21,7 +21,6 @@ export interface TenantConfig {
 }
 
 export interface UseAgentHandlerChatProps {
-  chatToken?: string | undefined;
   authToken?: string | undefined;
   tenantConfig?: TenantConfig;
   onReady?: () => void;
@@ -36,12 +35,11 @@ export interface UseAgentHandlerChatProps {
 }
 
 export interface InitializeProps extends UseAgentHandlerChatProps {
-  chatToken?: string;
   authToken?: string;
 }
 
 export interface OpenProps {
-  chatToken?: string;
+  authToken?: string;
 }
 
 export type UseAgentHandlerChatResponse = {

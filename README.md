@@ -6,7 +6,13 @@ A React hook wrapper for [Agent Handler Chat](https://github.com/merge-api/agent
 
 This package provides a simple React hook to integrate the Agent Handler Chat widget into your React application. It handles script loading, initialization, and provides a clean React API.
 
-**Design Philosophy**: Config is immutable after mount. The hook loads the script once, initializes once, and cleans up on unmount. This eliminates unnecessary complexity and provides optimal performance.
+**Design Philosophy**: Ultra-simple, no retry logic. The hook:
+1. Loads the script once
+2. Initializes once
+3. Cleans up on unmount
+4. Config is immutable after mount
+
+This eliminates complexity, prevents infinite loops, and provides optimal performance.
 
 For detailed information about the Agent Handler Chat widget architecture and how this package works, please refer to the [agent-handler-chat README](https://github.com/merge-api/agent-handler-chat).
 
@@ -31,7 +37,7 @@ import { useAgentHandlerChat } from '@mergeapi/react-agent-handler-chat';
 
 function App() {
   const { open, close, isReady } = useAgentHandlerChat({
-    chatToken: 'your-chat-token',
+    authToken: 'your-chat-token',
     displayMode: 'modal', // default
     onReady: () => {
       console.log('Chat is ready!');
@@ -61,7 +67,7 @@ import { useAgentHandlerChat } from '@mergeapi/react-agent-handler-chat';
 
 function App() {
   const { open, isReady } = useAgentHandlerChat({
-    chatToken: 'your-chat-token',
+    authToken: 'your-chat-token',
     displayMode: 'inline',
     parentContainerID: 'chat-container',
   });
@@ -82,8 +88,7 @@ function App() {
 #### `useAgentHandlerChat(config)`
 
 **Parameters:**
-- `chatToken` (string, optional): The chat token for authentication
-- `authToken` (string, optional): The auth token for authentication (alternative to chatToken)
+- `authToken` (string, optional): The auth token for authentication
 - `displayMode` ('modal' | 'inline', optional): Display mode. Default: 'modal'
 - `tenantConfig` (object, optional): Environment configuration
   - `environment` ('local' | 'development' | 'production', optional): Backend API and CDN environment
@@ -116,30 +121,34 @@ For more details on the architecture and the underlying widget, see the [agent-h
 
 ### Running the Example App
 
-The `examples/` directory contains a test application for development and testing.
+The `example/` directory contains a React application demonstrating how to use the hook.
 
 ```bash
-cd examples
+cd example
 npm install
 ```
 
-**Start the development server:**
+**Available Commands:**
 
 ```bash
-npm run dev
-# or
-npm run start:local   # Same as dev
-npm run start:dev     # Same as dev
-npm run start:prod    # Same as dev
+# Local CDN + Local backend
+npm start:local
+
+# Local CDN + Dev backend (useful for testing local CDN changes against dev API)
+npm start:local-cdn-against-dev
+
+# Dev CDN + Dev backend
+npm start:dev
+
+# Prod CDN + Prod backend
+npm start:prod
 ```
 
-All commands start the same Vite dev server. The backend and CDN environment is controlled through the UI by selecting:
-- **Backend API**: local, development, or production
-- **CDN**: local, development, or production
+All commands run on port `3009`. The example uses environment variables to control which CDN and backend to use:
+- `REACT_APP_MERGE_ENV`: Controls the backend environment (`local`, `development`, `production`)
+- `REACT_APP_USE_LOCAL_CDN`: When `true`, uses local CDN regardless of `REACT_APP_MERGE_ENV`
 
-This allows you to test any combination of backend and CDN environments without restarting the server.
-
-**Advanced: Override CDN via tenantConfig**
+**Environment Configuration in Code:**
 
 You can also programmatically control the environment in your code:
 

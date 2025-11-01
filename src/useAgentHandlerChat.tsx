@@ -7,11 +7,11 @@ import {
 /**
  * React hook for Agent Handler Chat widget
  * 
- * Clean, simple implementation:
- * - Loads script once on mount
- * - Initializes widget once when script loads
- * - Cleans up on unmount
- * - Config is immutable after mount (as intended)
+ * Ultra-simple implementation:
+ * - Load script once
+ * - Initialize once
+ * - Clean up on unmount
+ * - NO RETRY LOGIC
  * 
  * @param config - Chat configuration (immutable after mount)
  * @returns { open, close, isReady, error }
@@ -21,51 +21,50 @@ export const useAgentHandlerChat = (
 ): UseAgentHandlerChatResponse => {
   const [isReady, setIsReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const initializingRef = useRef(false);
+  const hasInitialized = useRef(false);
 
   // Determine CDN URL once at mount
   const cdnUrl = useRef(getCdnUrl(config)).current;
 
   useEffect(() => {
-    // Skip if already initializing or no token provided
-    if (initializingRef.current || (!config.authToken && !config.chatToken)) {
+    // Only run once
+    if (hasInitialized.current) {
       return;
     }
 
-    initializingRef.current = true;
+    // Require token
+    if (!config.authToken) {
+      return;
+    }
 
-    // Check if script already exists
+    hasInitialized.current = true;
+
+    // Check if script already loaded
     const existingScript = document.querySelector<HTMLScriptElement>(
-      `script[src="${cdnUrl}"][data-widget="ah-chat"]`
+      `script[src="${cdnUrl}"]`
     );
 
-    if (existingScript) {
-      // Script already loaded, initialize immediately
+    if (existingScript && window.AgentHandlerChat) {
+      // Script loaded, API available - just initialize
       initializeWidget();
-      return;
+    } else if (existingScript) {
+      // Script tag exists but API not ready yet - wait for it
+      existingScript.addEventListener('load', initializeWidget);
+    } else {
+      // Load script for first time
+      const script = document.createElement('script');
+      script.src = cdnUrl;
+      script.async = true;
+      script.onload = initializeWidget;
+      script.onerror = () => {
+        setError(`Failed to load chat widget from ${cdnUrl}`);
+      };
+      document.body.appendChild(script);
     }
-
-    // Load script
-    const script = document.createElement('script');
-    script.src = cdnUrl;
-    script.setAttribute('data-widget', 'ah-chat');
-    script.async = true;
-
-    script.onload = () => {
-      initializeWidget();
-    };
-
-    script.onerror = () => {
-      setError(`Failed to load chat widget from ${cdnUrl}`);
-      initializingRef.current = false;
-    };
-
-    document.body.appendChild(script);
 
     function initializeWidget() {
       if (!window.AgentHandlerChat) {
         setError('Chat widget API not available');
-        initializingRef.current = false;
         return;
       }
 
@@ -78,11 +77,11 @@ export const useAgentHandlerChat = (
       });
     }
 
-    // Cleanup on unmount
+    // Cleanup
     return () => {
       window.AgentHandlerChat?.destroy();
     };
-  }, []); // Empty deps - run once on mount
+  }, []); // Empty deps - truly run once
 
   const open = useCallback(() => {
     window.AgentHandlerChat?.open();
