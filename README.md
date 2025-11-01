@@ -6,6 +6,8 @@ A React hook wrapper for [Agent Handler Chat](https://github.com/merge-api/agent
 
 This package provides a simple React hook to integrate the Agent Handler Chat widget into your React application. It handles script loading, initialization, and provides a clean React API.
 
+**Design Philosophy**: Config is immutable after mount. The hook loads the script once, initializes once, and cleans up on unmount. This eliminates unnecessary complexity and provides optimal performance.
+
 For detailed information about the Agent Handler Chat widget architecture and how this package works, please refer to the [agent-handler-chat README](https://github.com/merge-api/agent-handler-chat).
 
 ## Installation
@@ -97,7 +99,12 @@ function App() {
 - `open` (function): Function to open the chat
 - `close` (function): Function to close the chat
 - `isReady` (boolean): Whether the chat is ready to be opened
-- `error` (ErrorEvent | null): Any error that occurred during initialization
+- `error` (string | null): Error message if initialization failed
+
+**Important Notes:**
+- Config should not change after mount (use `useMemo` to stabilize config objects)
+- If you need to change config, unmount and remount the component
+- The hook loads the script once and initializes once for optimal performance
 
 ## How It Works
 

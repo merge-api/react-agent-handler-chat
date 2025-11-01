@@ -1,119 +1,133 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  InitializeProps,
   UseAgentHandlerChatProps,
   UseAgentHandlerChatResponse,
 } from './types';
-import useScript from './hooks/useScript';
-
-const isTokenDefined = (
-  config: UseAgentHandlerChatProps
-): config is InitializeProps => 
-  config?.chatToken !== undefined || config?.authToken !== undefined;
 
 /**
  * React hook for Agent Handler Chat widget
  * 
- * Behavior:
- * - Creates iframe on first initialization
- * - Destroys and recreates iframe when config changes (ensures fresh state)
- * - All config properties are considered critical
+ * Clean, simple implementation:
+ * - Loads script once on mount
+ * - Initializes widget once when script loads
+ * - Cleans up on unmount
+ * - Config is immutable after mount (as intended)
  * 
- * @param config - Chat configuration
+ * @param config - Chat configuration (immutable after mount)
  * @returns { open, close, isReady, error }
  */
 export const useAgentHandlerChat = (
   config: UseAgentHandlerChatProps
 ): UseAgentHandlerChatResponse => {
-  const getCdnUrl = (env: 'local' | 'development' | 'production'): string => {
-    switch (env) {
-      case 'local':
-        return 'http://localhost:3007/initialize.js';
-      case 'development':
-        return 'https://ah-chat-cdn-develop.merge.dev/initialize.js';
-      case 'production':
-        return 'https://ah-chat-cdn.merge.dev/initialize.js';
-    }
-  };
-
-  const initializeSrc = (() => {
-    // Priority 1: Use cdnEnvironment if specified
-    if (config?.tenantConfig?.cdnEnvironment) {
-      return getCdnUrl(config.tenantConfig.cdnEnvironment);
-    }
-    
-    // Priority 2: Use environment if specified
-    if (config?.tenantConfig?.environment) {
-      return getCdnUrl(config.tenantConfig.environment);
-    }
-    
-    // Priority 3: Allow override via environment variable (useful for build-time testing)
-    const envOverride = typeof process !== 'undefined' && process.env?.VITE_CHAT_CDN;
-    if (envOverride) {
-      switch (envOverride) {
-        case 'local':
-          return 'http://localhost:3007/initialize.js';
-        case 'dev':
-        case 'development':
-          return 'https://ah-chat-cdn-develop.merge.dev/initialize.js';
-        case 'prod':
-        case 'production':
-          return 'https://ah-chat-cdn.merge.dev/initialize.js';
-      }
-    }
-
-    // Default: Production
-    return 'https://ah-chat-cdn.merge.dev/initialize.js';
-  })();
-
-  const [loading, error] = useScript({
-    src: initializeSrc,
-    checkForExisting: true,
-    'data-widget': 'ah-chat',
-  });
   const [isReady, setIsReady] = useState(false);
-  const isServer = typeof window === 'undefined';
-  const isReadyForInitialization =
-    !isServer &&
-    !!window.AgentHandlerChat &&
-    !loading &&
-    !error &&
-    isTokenDefined(config);
+  const [error, setError] = useState<string | null>(null);
+  const initializingRef = useRef(false);
+
+  // Determine CDN URL once at mount
+  const cdnUrl = useRef(getCdnUrl(config)).current;
 
   useEffect(() => {
-    if (
-      isReadyForInitialization &&
-      window.AgentHandlerChat &&
-      isTokenDefined(config)
-    ) {
+    // Skip if already initializing or no token provided
+    if (initializingRef.current || (!config.authToken && !config.chatToken)) {
+      return;
+    }
+
+    initializingRef.current = true;
+
+    // Check if script already exists
+    const existingScript = document.querySelector<HTMLScriptElement>(
+      `script[src="${cdnUrl}"][data-widget="ah-chat"]`
+    );
+
+    if (existingScript) {
+      // Script already loaded, initialize immediately
+      initializeWidget();
+      return;
+    }
+
+    // Load script
+    const script = document.createElement('script');
+    script.src = cdnUrl;
+    script.setAttribute('data-widget', 'ah-chat');
+    script.async = true;
+
+    script.onload = () => {
+      initializeWidget();
+    };
+
+    script.onerror = () => {
+      setError(`Failed to load chat widget from ${cdnUrl}`);
+      initializingRef.current = false;
+    };
+
+    document.body.appendChild(script);
+
+    function initializeWidget() {
+      if (!window.AgentHandlerChat) {
+        setError('Chat widget API not available');
+        initializingRef.current = false;
+        return;
+      }
+
       window.AgentHandlerChat.initialize({
         ...config,
         onReady: () => {
           setIsReady(true);
+          config.onReady?.();
         },
       });
     }
 
-    // Cleanup: Destroy iframe when config changes to ensure fresh state
+    // Cleanup on unmount
     return () => {
-      if (window.AgentHandlerChat && window.AgentHandlerChat.destroy) {
-        window.AgentHandlerChat.destroy();
-      }
-      setIsReady(false);
+      window.AgentHandlerChat?.destroy();
     };
-  }, [isReadyForInitialization, config]);
+  }, []); // Empty deps - run once on mount
 
   const open = useCallback(() => {
-    if (window.AgentHandlerChat) {
-      window.AgentHandlerChat.open(config);
-    }
-  }, [config]);
+    window.AgentHandlerChat?.open();
+  }, []);
 
   const close = useCallback(() => {
-    if (window.AgentHandlerChat) {
-      window.AgentHandlerChat.close();
-    }
+    window.AgentHandlerChat?.close();
   }, []);
 
   return { open, close, isReady, error };
 };
+
+/**
+ * Determines the CDN URL based on config
+ */
+function getCdnUrl(config: UseAgentHandlerChatProps): string {
+  // Priority 1: cdnEnvironment
+  if (config.tenantConfig?.cdnEnvironment) {
+    return getUrlForEnvironment(config.tenantConfig.cdnEnvironment);
+  }
+
+  // Priority 2: environment
+  if (config.tenantConfig?.environment) {
+    return getUrlForEnvironment(config.tenantConfig.environment);
+  }
+
+  // Priority 3: environment variable (build-time)
+  if (typeof process !== 'undefined' && process.env?.VITE_CHAT_CDN) {
+    const env = process.env.VITE_CHAT_CDN;
+    if (env === 'local') return 'http://localhost:3007/initialize.js';
+    if (env === 'dev' || env === 'development') return 'https://ah-chat-cdn-develop.merge.dev/initialize.js';
+    if (env === 'prod' || env === 'production') return 'https://ah-chat-cdn.merge.dev/initialize.js';
+  }
+
+  // Default: production
+  return 'https://ah-chat-cdn.merge.dev/initialize.js';
+}
+
+function getUrlForEnvironment(env: 'local' | 'development' | 'production'): string {
+  switch (env) {
+    case 'local':
+      return 'http://localhost:3007/initialize.js';
+    case 'development':
+      return 'https://ah-chat-cdn-develop.merge.dev/initialize.js';
+    case 'production':
+      return 'https://ah-chat-cdn.merge.dev/initialize.js';
+  }
+}

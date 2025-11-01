@@ -48,7 +48,7 @@ export type UseAgentHandlerChatResponse = {
   open: () => void;
   close: () => void;
   isReady: boolean;
-  error: ErrorEvent | null;
+  error: string | null;
 };
 
 declare global {
