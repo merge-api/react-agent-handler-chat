@@ -2,6 +2,7 @@ export interface AgentHandlerChat {
   initialize: (config: InitializeProps) => void;
   openChat: () => void;
   closeChat: () => void;
+  destroy: () => void;
 }
 
 export interface TenantConfig {

@@ -53,6 +53,14 @@ export const useAgentHandlerChat = ({
         },
       });
     }
+
+    // Cleanup: destroy the iframe when component unmounts
+    return () => {
+      if (window.AgentHandlerChat && window.AgentHandlerChat.destroy) {
+        window.AgentHandlerChat.destroy();
+      }
+      setIsReady(false);
+    };
   }, [isReadyForInitialization, config]);
 
   const openChat = useCallback(() => {
