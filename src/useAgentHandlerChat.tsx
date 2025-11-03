@@ -37,8 +37,9 @@ export const useAgentHandlerChat = ({
     !error &&
     !!config.authToken;
 
+  // Initialize the chat widget when ready
   useEffect(() => {
-    console.log('[useAgentHandlerChat] Effect running, isReadyForInitialization:', isReadyForInitialization);
+    console.log('[useAgentHandlerChat] Init effect running, isReadyForInitialization:', isReadyForInitialization);
     if (
       isReadyForInitialization &&
       window.AgentHandlerChat &&
@@ -56,10 +57,13 @@ export const useAgentHandlerChat = ({
         },
       });
     }
+  }, [isReadyForInitialization, config]);
 
-    // Cleanup: destroy the iframe when component unmounts
+  // Cleanup: destroy the iframe when component unmounts
+  useEffect(() => {
+    console.log('[useAgentHandlerChat] Cleanup effect mounted');
     return () => {
-      console.log('[useAgentHandlerChat] Cleanup function called');
+      console.log('[useAgentHandlerChat] Cleanup function called - component unmounting');
       if (window.AgentHandlerChat && window.AgentHandlerChat.destroy) {
         console.log('[useAgentHandlerChat] Calling destroy()');
         window.AgentHandlerChat.destroy();
@@ -71,7 +75,7 @@ export const useAgentHandlerChat = ({
       }
       setIsReady(false);
     };
-  }, [isReadyForInitialization, config]);
+  }, []); // Empty deps array ensures cleanup only runs on unmount
 
   const openChat = useCallback(() => {
     if (window.AgentHandlerChat) {
