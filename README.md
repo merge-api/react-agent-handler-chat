@@ -54,3 +54,60 @@ function App() {
 
 export default App;
 ```
+
+### Example with Customization
+
+```tsx
+import React from 'react';
+import { useAgentHandlerChat } from '@mergeapi/react-agent-handler-chat';
+
+function App() {
+  const { openChat, closeChat, isReady } = useAgentHandlerChat({
+    authToken: 'your-auth-token',
+    parentContainerID: 'chat-container',
+    customization: {
+      title: 'Customer Support',
+      blankState: {
+        heading: 'How can we help you today?',
+        subtitle: 'Ask us anything about our products and services'
+      },
+      promptSuggestions: [
+        'What are your business hours?',
+        'How do I reset my password?',
+        'Tell me about pricing'
+      ]
+    },
+    onReady: () => console.log('Chat ready'),
+  });
+
+  return (
+    <div>
+      <h1>Customer Support Chat</h1>
+      <div id="chat-container" style={{ width: '400px', height: '600px' }} />
+      {isReady && <button onClick={openChat}>Open Chat</button>}
+    </div>
+  );
+}
+```
+
+## Configuration Options
+
+### Required
+- **`authToken`** (string): Authentication token for backend API calls
+
+### Optional
+- **`tenantConfig`** (object): Configuration for custom API base URL
+  - **`apiBaseUrl`** (string): Override the default API base URL
+- **`useDummyResponse`** (boolean): If true, always returns "You're absolutely right" (default: false)
+- **`parentContainerID`** (string): ID of the DOM element to mount the chat widget in
+- **`onReady`** (function): Callback when widget is ready
+- **`onSuccess`** (function): Callback when a message is successfully sent
+- **`onValidationError`** (function): Callback when validation errors occur
+- **`customization`** (object): Customize the appearance and behavior of the chat widget
+  - **`title`** (string): Title displayed in the header (default: "Playground")
+  - **`blankState`** (object): Customize the empty state when no messages exist
+    - **`icon`** (React.ReactNode): Custom icon to display (default: Send icon)
+    - **`heading`** (string): Main heading text (default: "Start a Conversation")
+    - **`subtitle`** (string): Subtitle text (default: "Test your tool packs in a sandbox environment. Type a message below to begin.")
+  - **`promptSuggestions`** (string[]): Array of suggested prompts to display as clickable buttons in the blank state
+```

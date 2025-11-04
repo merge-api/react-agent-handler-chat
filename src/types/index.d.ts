@@ -9,6 +9,16 @@ export interface TenantConfig {
   apiBaseUrl?: string;
 }
 
+export interface Customization {
+  title?: string;
+  blankState?: {
+    icon?: React.ReactNode;
+    heading?: string;
+    subtitle?: string;
+  };
+  promptSuggestions?: string[];
+}
+
 export interface UseAgentHandlerChatProps {
   authToken: string;
   tenantConfig?: TenantConfig;
@@ -17,6 +27,7 @@ export interface UseAgentHandlerChatProps {
   onValidationError?: (error: string) => void;
   onSuccess?: (message: string) => void;
   onReady?: () => void;
+  customization?: Customization;
 }
 
 export interface InitializeProps extends UseAgentHandlerChatProps {
