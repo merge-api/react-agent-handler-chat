@@ -8,7 +8,8 @@ This package is usually only updated when there are breaking changes to the func
 
 1. Make the change
 2. Bump the package version in `package.json`
-3. Run `npm publish` (Will need to setup credentials through `npm login` or github token)
+3. Run `npm run build` to build the package
+4. Run `npm publish` (Will need to setup credentials through `npm login` or github token)
  - Don't forget to update the package version in the frontend as well
 
 ### Basic Example
