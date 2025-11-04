@@ -26,7 +26,6 @@ export const useAgentHandlerChat = ({
   const [loading, error] = useScript({
     src: initializeSrc,
     checkForExisting: true,
-    'data-widget': 'ah-chat',
   });
   const [isReady, setIsReady] = useState(false);
   const isServer = typeof window === 'undefined';
