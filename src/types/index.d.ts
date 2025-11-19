@@ -17,6 +17,7 @@ export interface Customization {
     subtitle?: string;
   };
   promptSuggestions?: string[];
+  initialToolPackId?: string;
 }
 
 export interface UseAgentHandlerChatProps {
